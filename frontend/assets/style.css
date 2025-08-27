@@ -1,0 +1,45 @@
+/* Estilos generales */
+body {
+  background-color: #f4f6f9;
+}
+
+/* Paneles */
+.panel {
+  max-width: 960px; /* más ancho para el semáforo */
+}
+
+/* Semáforo - bombillas */
+.semaforo { display:flex; gap:18px; align-items:center; justify-content:center; margin-bottom:12px; }
+.lamp { width:80px; height:80px; border-radius:50%; background:#222; box-shadow: inset -4px -6px 18px rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; transition: box-shadow 0.2s, background 0.2s; }
+.lamp.on { box-shadow: 0 0 18px rgba(255,255,255,0.15), 0 0 30px rgba(0,0,0,0.6); }
+.lamp.red.on { background: linear-gradient(#ff4a4a, #b30000); box-shadow: 0 0 30px rgba(255,0,0,0.6); }
+.lamp.yellow.on { background: linear-gradient(#ffec8a, #d09b00); box-shadow: 0 0 30px rgba(255,200,0,0.6); }
+.lamp.green.on { background: linear-gradient(#8cff9a, #006b1f); box-shadow: 0 0 30px rgba(0,255,100,0.35); }
+.lamp.red { background:#3b0f0f; } 
+.lamp.yellow { background:#3b371a; }
+.lamp.green { background:#0b2d12; }
+
+.lamp-label { font-weight:600; margin-top:8px; text-align:center; font-size:0.95rem; color:#333; }
+
+.status-indicator {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 10px;
+  background-color: #6c757d; /* gris apagado */
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+.status-indicator.on { background-color: #28a745; box-shadow: 0 0 12px #28a745; }
+
+#Mcu-log, #mcu-log { max-height: 200px; overflow-y: auto; padding-left: 20px; }
+
+/* Badges y layout */
+.badge-mode { font-size:0.9rem; padding:0.45rem 0.6rem; }
+
+/* pequeños ajustes responsivos */
+@media (max-width: 576px) {
+  .lamp { width:64px; height:64px; }
+  .panel { padding: 12px; }
+}

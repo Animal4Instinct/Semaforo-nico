@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Introducción a los sistemas de control 2025</title>
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/style.css" />
+  </head>
+  <body class="d-flex flex-column align-items-center p-5">
+
+    <!-- Encabezado -->
+    <header class="mb-4 text-center">
+      <h1 class="fw-bold text-dark">Introducción a los sistemas de control 2025</h1>
+      <p class="text-muted">SCADA de ejemplo: Semáforo + estado en tiempo real</p>
+    </header>
+
+    <!-- Panel Semáforo -->
+    <div class="card shadow-sm p-4 rounded-4 text-center panel bg-white">
+      <h2 class="mb-3 text-secondary">Semáforo (estado en vivo)</h2>
+
+      <div class="semaforo d-flex justify-content-center gap-4 mb-3">
+        <div class="d-flex flex-column align-items-center">
+          <div id="rojo" class="lamp red" title="Rojo"></div>
+          <div class="lamp-label">Rojo</div>
+        </div>
+
+        <div class="d-flex flex-column align-items-center">
+          <div id="amarillo" class="lamp yellow" title="Amarillo"></div>
+          <div class="lamp-label">Amarillo</div>
+        </div>
+
+        <div class="d-flex flex-column align-items-center">
+          <div id="verde" class="lamp green" title="Verde"></div>
+          <div class="lamp-label">Verde</div>
+        </div>
+      </div>
+
+      <p id="estado-general" class="fw-semibold fs-6 text-secondary">
+        <span id="led-indicator" class="status-indicator"></span>
+        Estado general: <span id="estado-text">--</span>
+        &nbsp;&nbsp;
+        <span id="badge-modo" class="badge bg-secondary badge-mode">Modo: --</span>
+      </p>
+
+      <div class="d-flex justify-content-center gap-4 mb-3">
+        <div>Botón: <strong id="boton-estado">--</strong></div>
+        <div>Mantenimiento: <strong id="mantenimiento-estado">--</strong></div>
+      </div>
+
+      <!-- Controles semáforo -->
+      <div class="d-flex justify-content-center gap-2 flex-wrap mb-2">
+        <button id="btnRojo" class="btn btn-outline-danger">ROJO</button>
+        <button id="btnAmarillo" class="btn btn-outline-warning">AMARILLO</button>
+        <button id="btnVerde" class="btn btn-outline-success">VERDE</button>
+        <button id="btnCiclo" class="btn btn-outline-primary">CICLO</button>
+        <button id="btnOff" class="btn btn-outline-secondary">OFF</button>
+      </div>
+
+      <p class="text-muted small">La UI se actualiza según los mensajes recibidos por socket.io</p>
+    </div>
+
+    <!-- Panel log de mensajes desde Arduino -->
+    <div class="card shadow-sm p-3 rounded-4 mt-4 bg-light text-dark panel">
+      <h5>Mensajes desde MCU:</h5>
+      <ul id="mcu-log"></ul>
+    </div>
+
+    <!-- cliente socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      // DOM
+      const rojo = document.getElementById('rojo');
+      const amarillo = document.getElementById('amarillo');
+      const verde = document.getElementById('verde');
+      const estadoText = document.getElementById('estado-text');
+      const badgeModo = document.getElementById('badge-modo');
+      const mantenimientoEstado = document.getElementById('mantenimiento-estado');
+      const botonEstado = document.getElementById('boton-estado');
+      const ledInd = document.getElementById('led-indicator');
+      const log = document.getElementById('mcu-log');
+
+      // botones
+      document.getElementById('btnRojo').addEventListener('click', () => {
+        socket.emit('semaforo-cmd', 'ROJO'); // envia comando al servidor
+      });
+      document.getElementById('btnAmarillo').addEventListener('click', () => {
+        socket.emit('semaforo-cmd', 'AMARILLO');
+      });
+      document.getElementById('btnVerde').addEventListener('click', () => {
+        socket.emit('semaforo-cmd', 'VERDE');
+      });
+      document.getElementById('btnCiclo').addEventListener('click', () => {
+        socket.emit('semaforo-cmd', 'CICLO');
+      });
+      document.getElementById('btnOff').addEventListener('click', () => {
+        socket.emit('semaforo-cmd', 'OFF');
+        // compatibilidad legacy
+        socket.emit('led-off');
+      });
+
+      // recibir estado estructurado
+      socket.on('semaforo-state', (s) => {
+        const state = (typeof s === 'string') ? JSON.parse(s) : s;
+
+        rojo.classList.toggle('on', !!state.rojo);
+        amarillo.classList.toggle('on', !!state.amarillo);
+        verde.classList.toggle('on', !!state.verde);
+
+        estadoText.textContent = state.estado || (state.mantenimiento ? 'Mantenimiento' : 'Normal');
+        badgeModo.textContent = state.mantenimiento ? 'MODO MANTENIMIENTO' : 'MODO NORMAL';
+        badgeModo.classList.toggle('bg-warning', state.mantenimiento);
+        badgeModo.classList.toggle('bg-secondary', !state.mantenimiento);
+
+        mantenimientoEstado.textContent = state.mantenimiento ? 'SI' : 'NO';
+        botonEstado.textContent = state.boton ? 'PULSADO' : 'LIBRE';
+
+        ledInd.classList.toggle('on', !!(state.rojo || state.amarillo || state.verde));
+      });
+
+      // log crudo
+      socket.on('arduino-message', (msg) => {
+        const li = document.createElement('li');
+        li.textContent = msg;
+        log.appendChild(li);
+        log.scrollTop = log.scrollHeight;
+      });
+
+      // reconexión
+      socket.on('connect', () => {
+        const li = document.createElement('li');
+        li.textContent = '[cliente] Conectado al servidor';
+        log.appendChild(li);
+      });
+    </script>
+  </body>
+</html>

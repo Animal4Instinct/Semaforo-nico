@@ -1,0 +1,23 @@
+{
+  "name": "isc-template",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "nodemon server.mjs"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  },
+  "dependencies": {
+    "@serialport/parser-readline": "^11.0.1",
+    "express": "^4.21.2",
+    "serialport": "^11.0.1",
+    "socket.io": "^4.8.1"
+  },
+  "description": "",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
